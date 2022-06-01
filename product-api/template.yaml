@@ -9,11 +9,24 @@ Description: >
 Globals:
   Function:
     Timeout: 3
-    Tracing: Active
-  Api:
-    TracingEnabled: True
 
 Resources:
+  CreateProductFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/create_items/
+      Handler: app.lambda_handler
+      Runtime: python3.10
+      Events:
+        CreateItemj:
+          Type: Api
+          Properties:
+            Path: /items
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ItemsTable
+
   ItemsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -28,3 +41,7 @@ Resources:
         ReadCapacityUnits: "1"
         WriteCapacityUnits: "1"
 
+Outputs:
+  ItemApi: 
+    Description: "API Gateway Items endpoint"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
